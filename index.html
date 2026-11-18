@@ -83,19 +83,35 @@ function softBox(lo,la,flo,fla,hw,hh){return Math.max(0,Math.min(1,supD(lo,la,fl
 
 /* ---------- Mercury ---------- */
 var MC2=(function(){var r=rng(91),a=[];for(var i=0;i<34;i++)a.push([r()*360-180,r()*150-75,1+r()*4.5]);return a})();
-function HM2(x,y){var W=3360,U=W/360,lo=x/U-180,la=90-y/U;var h=pn(x,y,W,1,.5)*.8+.15;
-for(var i=0;i<MC2.length;i++){var c=MC2[i];if(Math.abs(la-c[1])>c[2]*1.3)continue;var e=dD(lo,la,c[0],c[1])/c[2];if(e<1)h-=.4*(1-e*e);else if(e<1.25)h+=.18*(1.25-e)*4}
-h+=basinD(lo,la,-170.8,30.5,18,.35);var dc=dD(lo,la,-170.8,30.5);if(dc<15&&dc>1){var an=Math.atan2(la-30.5,wD(lo+170.8));if(Math.abs(Math.sin(an*14))>.93)h-=.12*(1-dc/15)}
-h+=basinD(lo,la,88,-33,8.4,.3);if(dD(lo,la,88,-33)<8.4)h+=ridgeL(lo,la,[[83,-38],[93,-28]],.5,.2);
-h+=ridgeL(lo,la,[[96,-44],[101,-36],[104,-28]],.6,.18);
-h+=basinD(lo,la,-124,-20,7.5,.22)+basinD(lo,la,-164,-16,4.6,.3);
-var dr=dD(lo,la,57.6,27.6)/3.4;if(dr<1)h-=.3*(1-dr*dr);if(dr>.45&&dr<.62)h+=.15;if(dr>.95&&dr<1.15)h+=.22;
-var dk=dD(lo,la,-31,-11);if(dk<.8)h-=.35*(1-dk/.8);else if(dk<7){var ak=Math.atan2(la+11,wD(lo+31));if(Math.abs(Math.sin(ak*9))>.9)h+=.14*(1-dk/7)}
-if(la>-68&&la<-44){var sx=wD(lo-(-38+(la+66)/22*3));if(sx>0&&sx<1.6)h+=.3*(1-sx/1.6);else if(sx<=0&&sx>-1)h-=.1}
-if(dD(lo,la,119,27)<2.6&&rng((x/6|0)*999+(y/6|0))()>.6)h+=.25;
-var dm=dD(lo,la,-149.9,54.4);if(dm<1)h-=.4*(1-dm);
-h+=domeD(lo,la,60,-65,7,.25)+ridgeL(lo,la,[[101,-6],[101,2]],.5,.12)+ridgeL(lo,la,[[-34,44],[-31,56]],.5,.12)+domeD(lo,la,-80,70,15,-.12);
-return h}
+function HM2(x,y){var W=3360,U=W/360,lo=x/U-180,la=90-y/U;var h=pn(x,y,W,1,.5)*.5+.3;
+/* small random craters: about 2 km deep, low rims */
+for(var i=0;i<MC2.length;i++){var c=MC2[i];if(Math.abs(la-c[1])>c[2]*1.3)continue;var e=dD(lo,la,c[0],c[1])/c[2];if(e<1)h-=.22*(1-e*e);else if(e<1.25)h+=.08*(1.25-e)*4}
+/* northern smooth plains: broad lowland */
+h+=domeD(lo,la,-80,72,22,-.14);
+/* Caloris (163E 30.5N, 1,550 km): shallow lava-filled floor, part of it pushed up; Caloris Montes rim about 2 km above the plains with a gap to the south-east */
+var dc=dD(lo,la,163,30.5);if(dc<14)h+=-.07*(1-Math.pow(dc/14,3))+domeD(lo,la,158,33,6,.06);
+var ca=Math.atan2(la-30.5,wD(lo-163)),gap=1-.8*Math.exp(-Math.pow(wD((ca+0.8)*57.3)/35,2));h+=gap*ringD(lo,la,163,30.5,13.6,1.6,.24)*(.8+.2*vn(lo*.6,la*.6,5));
+if(dc<15&&dc>1){if(Math.abs(Math.sin(ca*14))>.93)h-=.05*(1-dc/15)}
+/* Rembrandt (87.7E 33.2S, 715 km) cut by Enterprise Rupes: cliff over 3 km */
+h+=basinD(lo,la,87.7,-33.2,8.4,.22);
+var ex=lineD(lo,la,[[63,-29],[79,-34],[84,-25]]);if(ex<3.5){var sd=(la+33.5)-(lo-75)*.3;h+=(sd>0?.3:.0)*Math.exp(-Math.pow(ex/2.6,2))}
+/* Beagle Rupes (101E 2S): about 1 km */
+h+=ridgeL(lo,la,[[101,-9],[100,-2],[103,5]],.45,.1);
+/* Beethoven (124W 20.8S) and Tolstoj (164.5W 16.3S): old flooded basins */
+h+=basinD(lo,la,-124.2,-20.8,7.5,.26)+basinD(lo,la,-164.5,-16.3,4.6,.2);var dt=dD(lo,la,-164.5,-16.3);if(dt>4.6&&dt<6.5)h-=.03;
+/* Rachmaninoff (57.6E 27.6N): peak ring, floor is Mercury's lowest point at 5.4 km below average */
+var dr=dD(lo,la,57.6,27.6)/3.4;if(dr<1)h=Math.min(h,.55)-.55*(1-dr*dr)*(1-dr*dr*.15);if(dr>.45&&dr<.62)h+=.12;if(dr>.95&&dr<1.15)h+=.12;
+/* Kuiper (31W 11.4S): young rayed crater */
+var dk=dD(lo,la,-31.1,-11.4);if(dk<.8)h-=.2*(1-dk/.8);else if(dk<7){var ak=Math.atan2(la+11.4,wD(lo+31.1));if(Math.abs(Math.sin(ak*9))>.9)h+=.06*(1-dk/7)}
+/* Discovery Rupes (38W 56S): cliff about 2 km */
+if(la>-68&&la<-44){var sx=wD(lo-(-40+(la+66)/22*3));if(sx>0&&sx<1.6)h+=.27*(1-sx/1.6);else if(sx<=0&&sx>-1)h-=.05}
+/* Raditladi hollows */
+if(dD(lo,la,119,27)<2.6&&rng((x/6|0)*999+(y/6|0))()>.6)h+=.08;
+/* MESSENGER impact site */
+var dm=dD(lo,la,-149.9,54.4);if(dm<1)h-=.15*(1-dm);
+/* highest point: ancient terrain just south of the equator (location approximate) */
+h+=domeD(lo,la,60,-6,5,.45);
+return Math.max(0,Math.min(1,h))}
 
 /* ---------- Venus ---------- */
 var VC2=(function(){var r=rng(92),a=[];for(var i=0;i<12;i++)a.push([r()*360-180,r()*140-70,.3+r()*.8]);return a})();
@@ -236,22 +252,22 @@ var HJ=gasH(GJ),CJ=gasC(GJ),HSa=gasH(GS),CSa=gasC(GS),HU=gasH(GU),CU=gasC(GU),HN
 var P=[
 {id:'mercury',n:'Mercury',WW:3360,WH:1680,RC:8,RR:4,tanks:8,H:HM2,kmLo:-5.4,kmHi:4.5,bg:'#07070A',acc:'#B8B8C0',tc:[[26,34,66],[64,80,120],[132,124,112],[196,174,138],[244,234,212]],relief:5,mapCr:48,doneCr:100,
 D:[
-{n:'Caloris Basin',by:"Mariner 10 flyby, 1974",t:'Impact basin',f:'About 1,550 km across. One of the largest impact basins in the solar system.',lo:-170.8,la:30.5,rd:18},
-{n:'Pantheon Fossae',by:"MESSENGER, first flyby 2008",t:'Radial fractures',f:'Hundreds of troughs radiating from a central crater, nicknamed "the spider".',lo:-170.8,la:30.5,rd:0},
-{n:'Rembrandt',by:"MESSENGER, second flyby 2008",t:'Impact basin',f:'A 715 km basin, the second largest on Mercury, with a vast scarp cutting across it.',lo:88,la:-33,rd:8.4},
-{n:'Kuiper',by:"Mariner 10 flyby, 1974",t:'Rayed crater',f:'A bright young crater whose rays stretch for hundreds of kilometres.',lo:-31,la:-11,rd:0},
-{n:'Discovery Rupes',by:"Mariner 10 flyby, 1974",t:'Lobate scarp',f:'A 650 km cliff formed as the whole planet cooled and shrank.',lo:-36.5,la:-56,rd:0},
+{n:'Caloris Basin',by:"Mariner 10 flyby, 1974",t:'Impact basin',f:'About 1,550 km across. One of the largest impact basins in the solar system.',lo:163,la:30.5,rd:18},
+{n:'Pantheon Fossae',by:"MESSENGER, first flyby 2008",t:'Radial fractures',f:'Hundreds of troughs radiating from a central crater, nicknamed "the spider".',lo:163,la:30.5,rd:0},
+{n:'Rembrandt',by:"MESSENGER, second flyby 2008",t:'Impact basin',f:'A 715 km basin, the second largest on Mercury, with a vast scarp cutting across it.',lo:87.7,la:-33.2,rd:8.4},
+{n:'Kuiper',by:"Mariner 10 flyby, 1974",t:'Rayed crater',f:'A bright young crater whose rays stretch for hundreds of kilometres.',lo:-31.1,la:-11.4,rd:0},
+{n:'Discovery Rupes',by:"Mariner 10 flyby, 1974",t:'Lobate scarp',f:'A 650 km cliff formed as the whole planet cooled and shrank.',lo:-38.3,la:-56.3,rd:0},
 {n:'Raditladi hollows',by:"MESSENGER orbiter, 2011",t:'Hollows',f:'Shallow bright pits unique to Mercury, possibly where volatile rock sublimates away.',lo:119,la:27,rd:0},
-{n:'Beethoven',by:"Mariner 10 flyby, 1974",t:'Impact basin',f:'A 640 km basin so old its rim has almost been erased by later lava flows.',lo:-124,la:-20,rd:7.5},
+{n:'Beethoven',by:"Mariner 10 flyby, 1974",t:'Impact basin',f:'A 640 km basin so old its rim has almost been erased by later lava flows.',lo:-124.2,la:-20.8,rd:7.5},
 {n:'Rachmaninoff',by:"MESSENGER, third flyby 2009",t:'Peak-ring basin',f:'A 290 km double-ring basin with some of the youngest volcanic plains on Mercury.',lo:57.6,la:27.6,rd:3.4},
-{n:'Tolstoj',by:"Mariner 10 flyby, 1974",t:'Impact basin',f:'A 390 km basin with a dark ring of material excavated from deep below the surface.',lo:-164,la:-16,rd:4.6},
+{n:'Tolstoj',by:"Mariner 10 flyby, 1974",t:'Impact basin',f:'A 390 km basin with a dark ring of material excavated from deep below the surface.',lo:-164.5,la:-16.3,rd:4.6},
 {n:'MESSENGER impact site',by:"MESSENGER impact, 30 Apr 2015",t:'Human artefact',f:'Where NASA\'s MESSENGER probe ended its mission in 2015, leaving a fresh crater.',lo:-149.9,la:54.4,rd:0}],
-B:[{lo:-40,la:-10}],
+B:[{lo:-70,la:20}],
 REC:[
-{k:'peak',n:'Southern high point',v:4.5,lo:60,la:-65},{k:'peak',n:'Caloris Montes',v:3.0,lo:-155,la:38},{k:'peak',n:'Enterprise Rupes crest',v:3.0,lo:101,la:-36},{k:'peak',n:'Beagle Rupes crest',v:2.0,lo:101,la:-2},{k:'peak',n:'Victoria Rupes crest',v:1.5,lo:-32.5,la:50},
-{k:'low',n:'Rachmaninoff floor',v:-5.4,lo:57.6,la:27.6},{k:'low',n:'Caloris floor',v:-2.0,lo:-170.8,la:30.5},{k:'low',n:'Borealis Planitia',v:-2.0,lo:-80,la:70},{k:'low',n:'Tolstoj floor',v:-1.8,lo:-164,la:-16},{k:'low',n:'Beethoven floor',v:-1.5,lo:-124,la:-20},
-{k:'crater',n:'Caloris',v:1550,lo:-170.8,la:30.5},{k:'crater',n:'Rembrandt',v:715,lo:88,la:-33},{k:'crater',n:'Beethoven',v:640,lo:-124,la:-20},{k:'crater',n:'Tolstoj',v:390,lo:-164,la:-16},{k:'crater',n:'Rachmaninoff',v:290,lo:57.6,la:27.6}],
-F:[[25,'Mercury is the smallest planet, barely larger than our Moon.'],[50,'A day on Mercury lasts 176 Earth days, longer than its 88-day year.'],[75,'Surface temperatures swing from 430°C in sunlight to -180°C at night.'],[96,'Despite the heat, ice survives in permanently shadowed craters at the poles.']]},
+{k:'peak',n:'Highest point',v:4.5,lo:60,la:-6},{k:'peak',n:'Caloris Montes',v:2.0,lo:172.8,la:39.4},{k:'peak',n:'Enterprise Rupes cliff',v:3.0,lo:75,la:-31.6},{k:'peak',n:'Beagle Rupes cliff',v:1.0,lo:100,la:-2},{k:'peak',n:'Discovery Rupes cliff',v:2.0,lo:-38.3,la:-56.3},
+{k:'low',n:'Rachmaninoff floor',v:-5.4,lo:57.6,la:27.6},{k:'low',n:'Rembrandt floor',v:-3.1,lo:87.7,la:-33.2},{k:'low',n:'Northern plains',v:-1.3,lo:-80,la:72},{k:'low',n:'Tolstoj floor',v:-1.8,lo:-164.5,la:-16.3},{k:'low',n:'Beethoven floor',v:-1.6,lo:-124.2,la:-20.8},
+{k:'crater',n:'Caloris',v:1550,lo:163,la:30.5},{k:'crater',n:'Rembrandt',v:715,lo:87.7,la:-33.2},{k:'crater',n:'Beethoven',v:640,lo:-124.2,la:-20.8},{k:'crater',n:'Tolstoj',v:390,lo:-164.5,la:-16.3},{k:'crater',n:'Rachmaninoff',v:290,lo:57.6,la:27.6}],
+F:[[25,'Mercury is the smallest planet, only about 40% wider than our Moon and smaller than Jupiter\'s moon Ganymede.'],[50,'A day on Mercury lasts 176 Earth days, longer than its 88-day year.'],[75,'Surface temperatures swing from 430°C in sunlight to -180°C at night.'],[96,'Despite the heat, ice survives in permanently shadowed craters at the poles.']]},
 {id:'venus',n:'Venus',WW:3960,WH:1980,RC:8,RR:4,tanks:12,H:HV2,kmLo:-2.9,kmHi:11.0,bg:'#0B0806',acc:'#E6B35A',tc:[[60,20,8],[140,52,14],[206,104,30],[242,166,62],[255,228,160]],relief:6.5,mapCr:72,doneCr:150,
 D:[
 {n:'Ishtar Terra',by:"Pioneer Venus radar, 1978",t:'Highland continent',f:'A raised continent the size of Australia in Venus\'s northern hemisphere.',lo:0,la:70,rd:0},
@@ -539,10 +555,10 @@ var fxs=p.WW/(gw*2),fys=(p.WH+sty)/(gh*2);p.D.forEach(function(dd){var rad=Math.
 
 /* ---------- ui helpers ---------- */
 var btns=[],toast=null,screen='home',sub=null,modal=null,dlg=null,layerStart=0;
-function tst(s,c,l){toast={s:s,c:c||'#E8FFF8',l:l||1.2}}
-function drawToast(y,dt){if(!(toast&&toast.l>0))return;cx.font='11px SpMono, monospace';var w=Math.min(VW-32,420),inner=w-32;var words=toast.s.split(' '),lines=[],line='';for(var i=0;i<words.length;i++){var test=line?line+' '+words[i]:words[i];if(cx.measureText(test).width>inner&&line){lines.push(line);line=words[i]}else line=test}lines.push(line);var h=lines.length*17+16;var x0=(VW-w)/2;cx.globalAlpha=Math.min(1,toast.l*2);cx.fillStyle='rgba(14,15,19,.96)';cx.fillRect(x0,y,w,h);cx.fillStyle=toast.c;cx.fillRect(x0,y,2,h);cx.fillStyle='#E8FFF8';for(var j=0;j<lines.length;j++)cx.fillText(lines[j],x0+14,y+20+j*17);cx.globalAlpha=1;toast.l-=dt/(2400+lines.length*900)}
+function tst(s,c,l){toast={s:s,c:c||'#E8FFF8',l:l||1.2,sc:screen}}
+function drawToast(y,dt){if(!(toast&&toast.l>0))return;if(toast.sc&&toast.sc!==screen&&!(toast.sc==='flight'&&screen==='exp')&&!(toast.sc==='exp'&&screen==='hangar')){toast.l=0;return}cx.font='11px SpMono, monospace';var w=Math.min(VW-32,420),inner=w-32;var words=toast.s.split(' '),lines=[],line='';for(var i=0;i<words.length;i++){var test=line?line+' '+words[i]:words[i];if(cx.measureText(test).width>inner&&line){lines.push(line);line=words[i]}else line=test}lines.push(line);var h=lines.length*17+16;var x0=(VW-w)/2;cx.globalAlpha=Math.min(1,toast.l*2);cx.fillStyle='rgba(14,15,19,.96)';cx.fillRect(x0,y,w,h);cx.fillStyle=toast.c;cx.fillRect(x0,y,2,h);cx.fillStyle='#E8FFF8';for(var j=0;j<lines.length;j++)cx.fillText(lines[j],x0+14,y+20+j*17);cx.globalAlpha=1;toast.l-=dt/(2400+lines.length*900)}
 function rrect(x,y,w,h,r){cx.beginPath();cx.moveTo(x+r,y);cx.arcTo(x+w,y,x+w,y+h,r);cx.arcTo(x+w,y+h,x,y+h,r);cx.arcTo(x,y+h,x,y,r);cx.arcTo(x,y,x+w,y,r);cx.closePath()}
-function button(x,y,w,h,label,subl,col,f,fill,tc){cx.strokeStyle=col;cx.lineWidth=.8;rrect(x,y,w,h,8);if(fill){cx.fillStyle=fill;cx.fill()}cx.stroke();if(tc)col=tc;cx.fillStyle=col;cx.font='500 11px ArchX, sans-serif';cx.textAlign='center';cx.fillText(String(label).toUpperCase(),x+w/2,y+(subl?19:h/2+4));if(subl){cx.fillStyle='#5B6672';cx.font='11px SpMono, monospace';cx.fillText(subl,x+w/2,y+34)}cx.textAlign='left';if(f)btns.push({x:x,y:y,w:w,h:h,f:f})}
+function button(x,y,w,h,label,subl,col,f,fill,tc){cx.strokeStyle=col;cx.lineWidth=.8;rrect(x,y,w,h,8);if(fill){cx.fillStyle=fill;cx.fill()}cx.stroke();if(tc)col=tc;cx.fillStyle=col;cx.font='500 11px ArchX, sans-serif';cx.textAlign='center';cx.fillText(String(label).toUpperCase(),x+w/2,y+(subl?19:h/2+4));if(subl){cx.fillStyle='#5B6672';cx.font='11px SpMono, monospace';cx.fillText(subl,x+w/2,y+34)}cx.textAlign='left';if(f)btns.push({x:x,y:y,w:w,h:h,f:f,lab:label})}
 function mono(s,x,y,c,al){cx.font='11px SpMono, monospace';cx.fillStyle=c||'#5B6672';cx.textAlign=al||'left';cx.fillText(s,x,y);cx.textAlign='left'}
 function txt(s,x,y,c,sz,w,al){sz=sz||14;cx.font=(w||400)>=500?'500 '+Math.round(sz*.82)+'px ArchX, sans-serif':Math.max(11,sz-2)+'px SpMono, monospace';cx.fillStyle=c||'#E8FFF8';cx.textAlign=al||'left';cx.fillText(s,x,y);cx.textAlign='left'}
 function wrapText(s,x,y,w,lh){var words=s.split(' '),line='';for(var i=0;i<words.length;i++){var test=line+words[i]+' ';if(cx.measureText(test).width>w&&line){cx.fillText(line,x,y);line=words[i]+' ';y+=lh}else line=test}cx.fillText(line,x,y);return y+lh}
@@ -594,7 +610,7 @@ else if(ret.ph===2){fuel=Math.min(tankSec(),fuel+tankSec()*dt/900);if(ret.t>1100
 if(ret&&ret.ph<2){var ddx=Math.abs(ret.tx-ret.sx)+300,ddy=Math.abs(b.y-ret.sy)+340;zTarget=Math.max(.14,Math.min(1,VW/ddx,VH/ddy))}
 for(var qq=0;qq<(ret?ret.trail.length:0);qq++)ret.trail[qq].l*=Math.pow(.97,k)}
 zoom+=(zTarget-zoom)*Math.min(1,dt/350);
-var flying=!empty&&!ret&&!dayOver&&!fullMap&&!docked&&!modal&&!dlg;
+var flying=!empty&&!ret&&!dayOver&&!fullMap&&!docked&&!modal&&!dlg&&!(tutActive()&&(S.tut||0)>=2);
 if(flying){S.time=Math.max(0,S.time-dt/1000);fuel=Math.max(0,fuel-dt/1000);if(fuel<=0){empty=true;tgt=null;log('tank_empty',{});jr('tank','Tank dry')}if(S.time<=0){dayOver=true;tgt=null;log('day_over',{});save()}}
 if(flying){var T=tgt;if(!T&&S.auto&&S.autoOn){var nb=nearestBase(),dist=Math.hypot(wdx(nb.x,pl.x,p.WW),nb.y-pl.y);if(fuel<dist/SPEED+15){startReturn();log('return_to_base',{manual:0});return}T=autopilotTarget()}
 if(down&&hold&&lastPS&&!(S.auto&&S.autoOn&&!tgt)){var hx=hold.x-lastPS.x,hy=hold.y-lastPS.y;T=hx*hx+hy*hy>196?{x:pl.x+hx/zoom*8,y:pl.y+hy/zoom*8}:null}
@@ -650,10 +666,10 @@ cx.fillStyle='#E8FFF8';for(var b3=0;b3<p.B.length;b3++)if(q.bases[b3])cx.fillRec
 drawRecordMarks(p,q,function(o){return{x:mxp+o.x*mw/p.WW,y:myp+o.y*mh/p.WH}},3,mw/p.WW);
 btns.push({x:mxp-8,y:myp-8,w:mw+16,h:mh+16,f:function(){openFullMap()}});
 var nf=0;for(var fi=0;fi<p.D.length;fi++)nf+=q.found[fi];
-mono('◇ '+nf+'/'+p.D.length,20,VH-32,'#D86BD2');mono(S.cr.toLocaleString()+' cr',20,VH-16,'#5E6872');
+cx.font='11px SpMono, monospace';var hw=Math.max(cx.measureText('◇ '+nf+'/'+p.D.length).width,cx.measureText(S.cr.toLocaleString()+' cr').width)+20;cx.fillStyle='rgba(7,7,10,.85)';rrect(12,VH-50,hw,44,8);cx.fill();mono('◇ '+nf+'/'+p.D.length,20,VH-32,'#D86BD2');mono(S.cr.toLocaleString()+' cr',20,VH-16,'#8A949E');
 if(ret){txt(ret.ph===2?'DOCKING · REFUELLING':'RETURNING TO RELAY '+gridRef(p,ret.b.x,ret.b.y),VW/2,VH-44,'#E8FFF8',12,500,'center');mono('Scanner off · day timer paused',VW/2,VH-24,'#5E6872','center')}
 else if(flying){var bxr=S.auto?VW-20-64-8-84:VW-20-84;button(bxr,VH-54,84,36,'Return',null,'#5E6872',startReturn,'rgba(7,7,10,.85)','#C9D2D9');if(S.auto){button(VW-20-64,VH-54,64,36,'AUTO',null,S.autoOn?'#00A85C':'#5E6872',function(){S.autoOn=S.autoOn?0:1;autoTarget=null;log('autopilot_toggle',{on:S.autoOn})},S.autoOn?'#00A85C':'#07070A','#FFFFFF')}}
-drawToast(TOP+64,dt);
+if(!tutActive())drawToast(TOP+64,dt);
 /* docked overlay */
 if(docked&&!fullMap&&!dayOver&&!celeb){var y=sheetStart(40+30+48+54+44,.55);txt('DOCKED · '+gridRef(p,pl.x,pl.y),20,y+6,'#E8FFF8',13,500);mono('Tank full · '+fmtT(S.time)+' left today',20,y+26,'#5E6872');var lw=(VW-40-16)/3;[['Home',function(){screen='home'}],['Map',function(){openFullMap()}],['Dock',function(){screen='dock';sub=null}]].forEach(function(b,i){button(20+i*(lw+8),y+42,lw,36,b[0],null,'#5E6872',b[1],'#0E0F13','#C9D2D9')});prim(y+90,'Launch','#E8FFF8',launch)}
 if(fullMap)drawFullMap(t,p,q,true);
@@ -681,11 +697,10 @@ for(var a2=0;a2<p.RC;a2++){var lxx=B.x+wrapX((a2+.5)*RW-fm.ox,p.WW)*sc;if(lxx>B.
 for(var b2=0;b2<p.RR;b2++){var lyy=B.y+((b2+.5)*RH-fm.oy)*sc+4;if(lyy>B.y&&lyy<B.y+B.h)mono(''+(b2+1),B.x-6,lyy,'#5B6672','right')}
 var nf=0;for(var i=0;i<p.D.length;i++)nf+=q.found[i];
 txt(p.n.toUpperCase()+' · MAP',20,TOP+30,'#E8FFF8',14,500);mono((pct(S.cur)*100).toFixed(1)+'% MAPPED · '+nf+'/'+p.D.length+' FOUND',20,TOP+48);
-closeBtn(function(){fullMap=false;sel=null;if(fm.from==='home'){screen='home';docked=true;cs().docked=1}},fm.from==='home'?'Home':null);
-if(q.done)link('Globe',VW-60,TOP+30,'#D4B23A',function(){globe={rx:0,ry:.3,drag:null};log('globe_open',{})},'right');
+(function(){var r=18,cxr=VW-20-r,cyr=TOP+24;cx.strokeStyle='#5E6872';cx.lineWidth=.8;cx.beginPath();cx.arc(cxr,cyr,r,0,7);cx.fillStyle='rgba(14,15,19,.9)';cx.fill();cx.stroke();cx.strokeStyle='#E8FFF8';cx.lineWidth=1.4;cx.beginPath();cx.moveTo(cxr-5,cyr-5);cx.lineTo(cxr+5,cyr+5);cx.moveTo(cxr+5,cyr-5);cx.lineTo(cxr-5,cyr+5);cx.stroke();btns.push({x:cxr-r-6,y:cyr-r-6,w:2*r+12,h:2*r+12,f:function(){fullMap=false;sel=null;if(fm.from==='home'){screen='home';docked=true;cs().docked=1}},lab:'Close'})})();
 var yb=B.y+B.h+10;if(fm.z>1){cx.fillStyle='rgba(91,102,114,.35)';cx.fillRect(B.x,yb,B.w,4);cx.fillStyle='#E8FFF8';var ww=B.w/fm.z,wx=fm.ox/p.WW*B.w;cx.fillRect(B.x+wx,yb,Math.min(ww,B.w-wx),4);if(wx+ww>B.w)cx.fillRect(B.x,yb,wx+ww-B.w,4)}
-yb+=12;mono(fm.z>1?'DRAG TO PAN · WRAPS EAST-WEST':'ZOOM IN FOR DETAIL',B.x,yb+18);button(VW-142,yb,36,28,'−',null,fm.z>1?'#E8FFF8':'#5B6672',function(){var c={x:fm.ox+B.w/2/B.s,y:fm.oy+B.h/2/B.s};fm.z=Math.max(1,fm.z-1);centreOn(p,{x:wrapX(c.x,p.WW),y:c.y},1)});mono(fm.z+'×',VW-96,yb+18,'#E8FFF8','center');button(VW-82,yb,36,28,'+',null,fm.z<4?'#E8FFF8':'#5B6672',function(){var c={x:fm.ox+B.w/2/B.s,y:fm.oy+B.h/2/B.s};fm.z=Math.min(4,fm.z+1);centreOn(p,{x:wrapX(c.x,p.WW),y:c.y},1)});
-yb+=40;tri(B.x+4,yb-4,5,'#D9862A',true);mono('HIGHEST',B.x+14,yb);tri(B.x+80,yb-4,5,'#3B9BD6',false);mono('DEEPEST',B.x+90,yb);cx.strokeStyle='#D4B23A';cx.setLineDash([2,3]);cx.beginPath();cx.arc(B.x+156,yb-4,5,0,7);cx.stroke();cx.setLineDash([]);mono('LARGEST CRATER',B.x+166,yb);
+yb+=12;if(q.done)button(B.x,yb,Math.min(150,B.w-170),36,'Globe view',null,'#D4B23A',function(){globe={rx:0,ry:.3,drag:null};log('globe_open',{})},'rgba(14,15,19,.9)');else mono(fm.z>1?'DRAG TO PAN':'ZOOM IN FOR DETAIL',B.x,yb+22);button(B.x+B.w-140,yb,44,36,'−',null,fm.z>1?'#E8FFF8':'#5B6672',function(){var c={x:fm.ox+B.w/2/B.s,y:fm.oy+B.h/2/B.s};fm.z=Math.max(1,fm.z-1);centreOn(p,{x:wrapX(c.x,p.WW),y:c.y},1)});mono(fm.z+'×',B.x+B.w-70,yb+22,'#E8FFF8','center');button(B.x+B.w-44,yb,44,36,'+',null,fm.z<4?'#E8FFF8':'#5B6672',function(){var c={x:fm.ox+B.w/2/B.s,y:fm.oy+B.h/2/B.s};fm.z=Math.min(4,fm.z+1);centreOn(p,{x:wrapX(c.x,p.WW),y:c.y},1)});
+yb+=52;tri(B.x+4,yb-4,5,'#D9862A',true);mono('HIGHEST',B.x+14,yb);tri(B.x+80,yb-4,5,'#3B9BD6',false);mono('DEEPEST',B.x+90,yb);cx.strokeStyle='#D4B23A';cx.setLineDash([2,3]);cx.beginPath();cx.arc(B.x+156,yb-4,5,0,7);cx.stroke();cx.setLineDash([]);mono('LARGEST CRATER',B.x+166,yb);
 var ly0=yb+14,rowH=30,maxRows=Math.max(1,Math.floor((VH-16-(sel?134:0)-ly0)/rowH)),rows=[],unk=0;for(var j=0;j<p.D.length;j++){if(q.found[j])rows.push({d:p.D[j],f:1});else if(q.hint[j])rows.push({d:p.D[j],f:0});else unk++}
 rows.slice(0,maxRows-(unk?1:0)).forEach(function(rw,ii){var y=ly0+ii*rowH;cx.fillStyle='#16181D';cx.fillRect(B.x,y+rowH-4,B.w,1);if(rw.f){dia(B.x+14,y+13,5,'#D86BD2',1.4);txt(rw.d.n,B.x+28,y+18,'#E8FFF8',13)}else{dia(B.x+14,y+13,5,'rgba(255,61,242,.4)',1);txt('Unknown site',B.x+28,y+18,'#5B6672',13)}mono(gridRef(p,rw.d.x,rw.d.y),B.x+B.w-8,y+18,rw.f?'#B8B8C0':'#D86BD2','right');btns.push({x:B.x,y:y,w:B.w,h:rowH-4,f:function(){centreOn(p,rw.d,3);sel=rw.f?rw.d:null}})});
 if(unk)mono('+ '+unk+' UNDISCOVERED',B.x,ly0+Math.min(rows.length,maxRows-1)*rowH+18,'#5B6672');
@@ -729,7 +744,7 @@ function hgRings(k,x0,y0,R,front){if(k!==5&&k!==6)return;cx.save();cx.translate(
  else{cx.rotate(1.25);var L=[[1.62,1.66,'rgba(190,220,226,.16)'],[1.9,1.98,'rgba(200,230,236,.24)']],sq=.82}
  for(var i=0;i<L.length;i++){var r0=L[i][0]*R,r1=L[i][1]*R,rm=(r0+r1)/2;cx.strokeStyle=L[i][2];cx.lineWidth=Math.max(.6,r1-r0);cx.beginPath();cx.ellipse(0,0,rm,rm*sq,0,front?0:Math.PI,front?Math.PI:Math.PI*2);cx.stroke()}cx.restore()}
 /* static globes: each planet is drawn once, turned to its best face, then reused */
-var FACE_OPTS=[[-155,95,-20],[10,105,-160],[-75,25,115],[-75,75,145],[45,-55,115],[-45,135,45],[-85,55,160],[15,155,-125]];
+var FACE_OPTS=[[179,95,-20],[10,105,-160],[-75,25,115],[-75,75,145],[45,-55,115],[-45,135,45],[-85,55,160],[15,155,-125]];
 var FACE=[0,1,1,0,0,0,0,0],HGC={};
 function faceOff(k,o){var lo=FACE_OPTS[k][o===undefined?FACE[k]:o];return((lo+18+180)/360+1)%1}
 function globeCanvas(k,R,o){var Rp=Math.round(R*DPR),key=k+':'+Rp+':'+(o===undefined?FACE[k]:o);if(HGC[key])return HGC[key];var T=hgTex(k);if(!T)return null;
@@ -878,7 +893,7 @@ function measured(p,q,k){var a=[];for(var i=0;i<p.REC.length;i++)if(q.rec[i]&&p.
 function measuredAll(k){var a=[];for(var i=0;i<P.length;i++){var m=measured(P[i],S.p[i],k);for(var j=0;j<m.length;j++)a.push({n:m[j].n,v:m[j].v,k:k,p:P[i]})}a.sort(function(x,y){return k==='low'?x.v-y.v:y.v-x.v});return a.slice(0,10)}
 function drawRecords(y,p,q){var lc=largestCrater(p,q),cw=(VW-40)/3;
 function stat(i,l,v,c){mono(l,20+i*cw,y,'#5E6872');txt(v,20+i*cw,y+24,c,16,500);mono(v==='—'?'':'km',20+i*cw,y+40,'#5E6872')}
-stat(0,'High',q.hi?km(p,q.hi.h).toFixed(1):'—','#D29A3A');stat(1,'Deep',q.lo?km(p,q.lo.h).toFixed(1):'—','#3B9BD6');var bigS=measured(p,q,'crater')[0];stat(2,p.gas?'Storm':'Crater',p.gas?(bigS?bigS.v.toLocaleString():'—'):(lc&&lc.f.match(/([\d,]+) km/)?lc.f.match(/([\d,]+) km/)[1]:'—'),'#D4B23A');y+=62;hline(y-6);y+=22;
+stat(0,'High',q.hi?km(p,q.hi.h).toFixed(1):'—','#D29A3A');stat(1,'Deep',q.lo?km(p,q.lo.h).toFixed(1):'—','#3B9BD6');var bigS=measured(p,q,'crater')[0];var nRec=q.rec.reduce(function(a,b){return a+b},0);stat(2,p.gas?'Storm':'Crater',p.gas?(bigS?bigS.v.toLocaleString():'—'):(lc&&lc.f.match(/([\d,]+) km/)?lc.f.match(/([\d,]+) km/)[1]:'—'),'#D4B23A');y+=62;hline(y-6);y+=16;mono('Your best so far · '+nRec+' of '+p.REC.length+' records measured',20,y,'#5E6872');y+=28;
 y=bars(y,p.gas?'Highest cloud tops':'Highest ground','#D29A3A',measured(p,q,'peak'),5,'km');y=bars(y,p.gas?'Deepest cloud gaps':'Deepest ground','#3B9BD6',measured(p,q,'low'),5,'km');y=bars(y,p.gas?'Largest storms, km':'Largest craters, km','#D4B23A',measured(p,q,'crater'),5,'w');
 link('Solar system board →',20,y+8,'#E8FFF8',function(){solarB={k:'peak'}});if(q.done)link('Globe',VW-20,y+8,'#D4B23A',function(){ensureMaps(S.cur);globe={rx:0,ry:.3,drag:null};log('globe_open',{})},'right','Open globe view');else mono('Globe at 100%',VW-20,y+8,'#3A3D45','right');return y+40}
 function drawSolar(){layerStart=btns.length;cx.fillStyle='#07070A';cx.fillRect(0,0,VW,VH);btns.push({x:0,y:0,w:VW,h:VH,f:function(){},pass:1});hdr('SOLAR SYSTEM');closeBtn(function(){solarB=null});mono('Top 10 measured across planets',20,TOP+48,'#5E6872');
@@ -1015,11 +1030,37 @@ function pgDraw(t,dt){var G=PG;if(G.mode!=='drag'){G.off+=(G.target-G.off)*Math.
  drawNav(G.scr);btns=btns.slice(0,0)}
 function drawBgFade(dt){if(BGFADE){BGFADE.a-=dt/320;if(BGFADE.a<=0)BGFADE=null;else{cx.fillStyle='rgba(7,7,10,'+BGFADE.a+')';cx.fillRect(0,0,VW,VH);bgDraw(BGFADE.k,false,HG.lastT||0,BGFADE.a)}}homeShade(TOP+134+Math.min(104,VW*.27))}
 
+/* ---------- Mercury tutorial ---------- */
+var TUT=[
+{t:'Welcome to Mercury',b:'Your probe is docked at a relay station. Tap Launch to start your first survey.',tg:'Launch',auto:function(){return !docked}},
+{t:'Steering',b:'Touch and hold anywhere on the screen. The probe turns and flies towards your finger. Let go and it keeps flying straight.',tg:'probe',auto:function(){return TUTS.held>1800}},
+{t:'Reading the colours',b:'Your LIDAR paints the ground by height. The plains around this relay sit near Mercury\'s average height, so they show green. Craters and basins dip to blue, cliffs and mountains rise to yellow and red. A fully mapped region switches to true colour.',key:1},
+{t:'Landmarks',b:'Real landmarks are hidden in the terrain. Map 95% of the ground around one and it registers: you earn credits, it gets a ring on your map, and its story goes into the Codex.'},
+{t:'Craters and records',b:'Craters, peaks and low points are measured the moment your scanner passes over their centre. Big basins such as Caloris are landmarks too, so they count once 95% of the basin is mapped.'},
+{t:'Fuel and relays',b:'The thin line at the top is your fuel. Tap Return to fly back to the nearest relay and refuel. The return flight is free.',tg:'Return'},
+{t:'Your map',b:'Tap the mini map to see the whole planet: what you have mapped, regions left and landmarks found. That is everything. Good surveying.',tg:'mini',last:1}];
+var TUTS={held:0};
+function tutActive(){return S&&S.cur===0&&!S.tutDone&&screen==='flight'&&!fullMap&&!globe&&!celeb&&!dlg&&!modal&&!dayOver}
+function tutRect(tg){var p=cp();if(tg==='probe'&&lastPS)return{x:lastPS.x-22,y:lastPS.y-22,w:44,h:44,c:1};if(tg==='mini'){var mw=Math.min(124,VW*.32),mh=mw*p.WH/p.WW;return{x:VW-mw-20,y:VH-mh-76,w:mw,h:mh}}
+ for(var i=btns.length-1;i>=0;i--)if(btns[i].lab&&String(btns[i].lab).indexOf(tg)===0)return btns[i];return null}
+function tutDone(skip){S.tutDone=1;S.tut=TUT.length;log('tutorial',{done:skip?'skipped':'finished',step:S.tut});save()}
+function drawTutorial(t,dt){if(!tutActive())return;var st=S.tut||0;if(st>=TUT.length){S.tutDone=1;return}var T=TUT[st];
+ if(st===1&&down&&hold)TUTS.held+=dt;if(T.auto&&T.auto()){S.tut=st+1;TUTS.held=0;log('tutorial',{step:S.tut});save();return}
+ var r=T.tg?tutRect(T.tg):null;if(r){var pu=.5+.5*Math.sin(t*.006);cx.save();cx.strokeStyle='rgba(216,107,210,'+(.55+.45*pu)+')';cx.lineWidth=2;if(r.c){cx.beginPath();cx.arc(r.x+r.w/2,r.y+r.h/2,r.w/2+4+pu*5,0,7);cx.stroke()}else{rrect(r.x-5-pu*3,r.y-5-pu*3,r.w+10+pu*6,r.h+10+pu*6,10);cx.stroke()}cx.restore()}
+ cx.font='11px SpMono, monospace';var w=VW-40,lines=Math.ceil(cx.measureText(T.b).width/(w-36))+1,h=58+lines*17+36+(T.key?34:0),y=docked?TOP+70:TOP+74;
+ cx.fillStyle='rgba(14,15,19,.96)';rrect(20,y,w,h,12);cx.fill();cx.strokeStyle='#D86BD2';cx.lineWidth=1;cx.stroke();
+ mono('TUTORIAL '+(st+1)+'/'+TUT.length,36,y+22,'#D86BD2');txt(T.t.toUpperCase(),36,y+44,'#E8FFF8',13,500);cx.fillStyle='#C9D2D9';cx.font='11px SpMono, monospace';var yy=wrapText(T.b,36,y+66,w-32,17);
+ if(T.key){var p0=cp(),ky=yy+4,kw=w-32,gr=cx.createLinearGradient(36,0,36+kw,0);for(var gi=0;gi<ramp.length;gi++)gr.addColorStop(gi/(ramp.length-1),'rgb('+ramp[gi].join(',')+')');cx.fillStyle=gr;rrect(36,ky,kw,8,4);cx.fill();mono((p0.kmLo>0?'+':'')+p0.kmLo.toFixed(1)+' km',36,ky+24,'#8A949E');mono('0',36+kw*(-p0.kmLo/(p0.kmHi-p0.kmLo)),ky+24,'#8A949E','center');mono('+'+p0.kmHi.toFixed(1)+' km',36+kw,ky+24,'#8A949E','right');yy+=34}
+ TUTS.bot=y+h;btns.push({x:20,y:y,w:w,h:h,f:function(){},pass:0,lab:'tut card'});
+ link('Skip tutorial',36,yy+14,'#5E6872',function(){tutDone(true)},null,'Skip tutorial');
+ if(!T.auto)link(T.last?'Got it':'Next →',VW-36,yy+14,'#E8FFF8',function(){if(T.last)tutDone(false);else{S.tut=st+1;log('tutorial',{step:S.tut});save()}},'right',T.last?'Got it':'Next')
+ else mono(st===0?'tap Launch':'try it now',VW-36,yy+14,'#8A949E','right')}
+
 /* ---------- log ---------- */
 var logScroll=0;
 function drawLog(t,dt){cx.fillStyle='#07070A';cx.fillRect(0,0,VW,VH);txt('SETTINGS',20,TOP+30,'#E8FFF8',16,500);
 var y=TOP+66;function row(l,v,c,f){mono(l,20,y,'#C9D2D9');if(v)mono(v,VW-20,y,c||'#5E6872','right');if(f)btns.push({x:0,y:y-22,w:VW,h:36,f:f,lab:l});cx.fillStyle='#16181D';cx.fillRect(20,y+14,VW-40,1);y+=40}
-row('Sound','coming soon');row('Music','coming soon');row('Restore purchases','',null,function(){tst('Nothing to restore in the test build','#8A949E')});
+row('Replay Mercury tutorial','',null,function(){S.tutDone=0;S.tut=0;S.cur=0;save();tst('Launch on Mercury to start the tutorial','#D86BD2')});row('Sound','coming soon');row('Music','coming soon');row('Restore purchases','',null,function(){tst('Nothing to restore in the test build','#8A949E')});
 y+=16;mono('Test tools',20,y,'#5E6872');y+=26;
 row(S.testUnlock?'Unlock all planets: on':'Unlock all planets',S.testUnlock?'on':'off',S.testUnlock?'#00C46B':'#5E6872',function(){S.testUnlock=S.testUnlock?0:1;log('test_unlock',{on:S.testUnlock});save()});
 row('Reset build','wipes progress','#E0524A',function(){dlg={t:'Reset everything?',b:'Wipes progress and credits on this phone.',ok:'Reset',okf:function(){localStorage.removeItem(KEY);fresh();fixSkins();seedUnlock();cloudQueue(serial());MAP=[];TRU=[];homePlanetThumbs=[];dlg=null;screen='home';fuel=tankSec();empty=false;ret=null;docked=true;fullMap=false;log('reset_build',{});save()},cancel:'Cancel'}});
@@ -1079,7 +1120,7 @@ try{SL.db.doc('events/'+id).set({build:'v3',session:SL.sid,at:new Date().toISOSt
 (function(){var tries=0;function go(){if(window.claude&&window.claude.use){window.claude.use('db').then(function(d){if(d){SL.db=d;slFlush()}},function(){})}else if(tries++<20)setTimeout(go,500)}go();setInterval(slFlush,20000);document.addEventListener('visibilitychange',function(){if(document.hidden)slFlush()});window.addEventListener('pagehide',slFlush)})();
 var last=0;
 var PF={n:0,sum:0,slow:0,t0:0};function loop(t){var rdt=t-(last||t),dt=Math.min(40,rdt);last=t;if(screen==='flight'&&rdt>0&&rdt<1000){PF.n++;PF.sum+=rdt;if(rdt>25)PF.slow++;if(!PF.t0)PF.t0=t;if(t-PF.t0>60000&&PF.n>30){log('perf',{avg_ms:+(PF.sum/PF.n).toFixed(1),fps:Math.round(1000/(PF.sum/PF.n)),slow_pct:Math.round(PF.slow/PF.n*100),planet:P[S.cur].id,w:VW,h:VH,dpr:DPR});PF={n:0,sum:0,slow:0,t0:t}}}btns=[];layerStart=0;PGT=t;newDayCheck();hgWork(screen==='home'?7:3);
-if(screen==='flight'){flightUpdate(dt,t);drawFlight(t,dt)}else if(PG&&PG.scr===screen){PGT=t;pgDraw(t,dt)}else if(screen==='home')drawHome(t,dt);else if(screen==='dock')drawDock(t,dt);else if(screen==='codex')drawCodex(t,dt);else if(screen==='log')drawLog(t,dt);else if(screen==='hangar')drawHangar(t,dt);else if(screen==='exp')drawExpedition(t,dt);
+if(screen==='flight'){flightUpdate(dt,t);drawFlight(t,dt);drawTutorial(t,dt);if(tutActive()&&TUTS.bot)drawToast(TUTS.bot+10,dt)}else if(PG&&PG.scr===screen){PGT=t;pgDraw(t,dt)}else if(screen==='home')drawHome(t,dt);else if(screen==='dock')drawDock(t,dt);else if(screen==='codex')drawCodex(t,dt);else if(screen==='log')drawLog(t,dt);else if(screen==='hangar')drawHangar(t,dt);else if(screen==='exp')drawExpedition(t,dt);
 if(screen!=='flight'&&screen!=='exp')drawToast(screen==='home'?TOP+40:VH-58-16-42-58,dt);
 if(globe)drawGlobe(t,dt);drawModal();drawDlg();requestAnimationFrame(loop)}
 requestAnimationFrame(loop);
